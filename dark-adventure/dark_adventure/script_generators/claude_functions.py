@@ -169,10 +169,10 @@ def generate_player_prompt(current_players):
     return gen_player_prompt
 
 
-def get_players(number_of_new_players_to_add):
+def get_players(number_of_new_players_to_add, file_path):
 
     try:
-        with open(os.path.join(os.getcwd(), '..', 'data', "players.json"), "r") as file_out:
+        with open(file_path, "r") as file_out:
             players_here = json.load(file_out)
     except FileNotFoundError:
         print('No player file found, generating one...')
@@ -191,7 +191,7 @@ def get_players(number_of_new_players_to_add):
             except Exception as e:
                 print(f"An error occurred: {str(e)}")
 
-        with open(os.path.join(os.getcwd(), '..', 'data', "players.json"), "w") as file_out:
+        with open(file_path, "w") as file_out:
             json.dump(players_here, file_out, indent=4)    # `indent=4` makes it more readable
 
     return players_here
@@ -265,7 +265,7 @@ if __name__ == "__main__":
     game_to_use = random.choice(options)
 
     all_characters = get_characters(number_of_new_characters_to_add=0, game_to_use=game_to_use)
-    all_players = get_players(number_of_new_players_to_add=0)
+    all_players = get_players(number_of_new_players_to_add=0, file_path=os.path.join(os.getcwd(), '..', 'data', "players.json"))
 
     # Number of players in the game
     n_players = random.randint(2, 5)
