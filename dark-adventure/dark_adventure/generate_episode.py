@@ -1,3 +1,4 @@
+""" as much as possible, auto-generates a Whispers in Green Static episode """
 import os
 import sys
 import json
@@ -9,6 +10,15 @@ from dotenv import load_dotenv
 from pydub import AudioSegment
 from voice_generators.elevenlabs_voices import text_to_speech_file
 
+
+# structure of episode:
+# 1. canned intro from ./show_intro_and_outro/green_static_intro.mp3
+# 2. commercial text spoken by random voice
+# 3. suno song with jingle lyrics
+# 4. main body adventure
+# 5. canned outro from ./show_intro_and_outro/green_static_outro.mp3
+#
+# 6. Auto-post to transistor.fm?
 
 def generate_audio_from_script():
 

@@ -28,7 +28,7 @@ def text_to_speech_file(client,
     # Generating a unique file name for the output MP3 file
     # save_file_path = "output.mp3"
     # Writing the audio to a file
-    directory = os.path.join(os.getcwd(), "player_intro_audio")
+    directory = os.path.join(os.getcwd(), "commercials")
     if not os.path.exists(directory):
         os.makedirs(directory)  # Creates the directory (and parents if needed)
 

@@ -5,4 +5,7 @@ experimental real-play role playing podcast
 Python 3.10
 
 conda --> python-dotenv, anthropic, pydub
-pip --> elevenlabs
+pip --> elevenlabs, transformers
+pip3 install -U xformers --index-url https://download.pytorch.org/whl/cu124 
+
+...erg

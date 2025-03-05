@@ -12,9 +12,10 @@ from pathlib import Path
 def get_claude_completion(
         prompt: str,
         api_key: str,
-        max_tokens: Optional[int] = 15000,
+        max_tokens: Optional[int] = 15000,    #15000
         temperature: Optional[float] = 0.7,
         model: str = "claude-3-7-sonnet-20250219"
+        # model: str = "claude-3-5-haiku-20241022"
 ) -> str:
     """
     Get a completion from Claude using the Anthropic API.
