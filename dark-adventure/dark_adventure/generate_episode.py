@@ -22,8 +22,8 @@ from generate_commercial import run_commercial_generation
 #
 # 6. Auto-post to transistor.fm?
 
-def generate_audio_from_script():
-
+def generate_audio_from_script(episode_number):
+    # this assumes the episode text has already been generated and stored as ./data/episode_str(episode_number).json
     load_dotenv()
     API_KEY = os.getenv("ELEVENLABS_API_KEY")
     client_to_use = ElevenLabs(api_key=API_KEY)
@@ -36,7 +36,7 @@ def generate_audio_from_script():
         human_first_name = v["Full Name"].split(" ")[0].lower()
         voice_dict[human_first_name] = v["Voice ID"].lower()
 
-    with open(os.path.join(os.getcwd(), "data", "episode_1.json"), "r") as file:
+    with open(os.path.join(os.getcwd(), "data", "episode_" + str(episode_number) + ".json"), "r") as file:
         full_script = json.load(file)
 
     split_full_script = full_script.split('\n\n')
@@ -50,10 +50,12 @@ def generate_audio_from_script():
 
     voice_id = {}
 
+    # todo how do we get the keeper name?
     for voice in available_voices.voices:
         if voice.name.lower() == "laura":   # need to get somehow
             voice_id[0] = voice.voice_id
 
+    # this uses the text to extract player names
     for each in explicitly_filtered_split_full_list:
         match = re.search(r"\((.*?)\)", each[0].lower())
         if match:
@@ -65,6 +67,15 @@ def generate_audio_from_script():
                 for voice in available_voices.voices:
                     if voice.name.lower() == voice_dict[player_name]:
                         voice_id[number] = voice.voice_id
+
+    # probably create new directory
+    dir_name = "episode_" + str(episode_number) + "_audio"
+    if not os.path.exists(directory):
+        os.makedirs(directory)  # Creates the directory (and parents if needed)
+    else:
+        answer = input('In generate_audio_from_script, episode_current_episode_audio exists; proceed (y/n?')
+        if answer != 'y':
+            sys.exit()
 
     idx = 0
 
@@ -80,7 +91,11 @@ def generate_audio_from_script():
             except TypeError:
                 print()
 
-        text_to_speech_file(client_to_use, voice_id=speaker, text=each[1], file_name="output_" + str(idx) + ".mp3")
+        text_to_speech_file(client_to_use,
+                            voice_id=speaker,
+                            text=each[1],
+                            directory=dir_name,
+                            file_name="output_" + str(idx) + ".mp3")
         idx += 1
 
 
