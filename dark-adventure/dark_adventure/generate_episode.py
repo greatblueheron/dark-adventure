@@ -9,10 +9,12 @@ from elevenlabs.client import ElevenLabs
 from dotenv import load_dotenv
 from pydub import AudioSegment
 from voice_generators.elevenlabs_voices import text_to_speech_file
+from utils.utils import find_highest_episode
+from generate_commercial import run_commercial_generation
 
 
 # structure of episode:
-# 1. canned intro from ./show_intro_and_outro/green_static_intro.mp3
+# 1. canned intro from ./show_intro_and_outro/green_static_intro.mp3 -- done
 # 2. commercial text spoken by random voice
 # 3. suno song with jingle lyrics
 # 4. main body adventure
@@ -78,7 +80,7 @@ def generate_audio_from_script():
             except TypeError:
                 print()
 
-        text_to_speech_file(client_to_use, voice_id=speaker, text=each[1], output_file_name="output_" + str(idx) + ".mp3")
+        text_to_speech_file(client_to_use, voice_id=speaker, text=each[1], file_name="output_" + str(idx) + ".mp3")
         idx += 1
 
 
@@ -124,6 +126,35 @@ def stitch_audio_files(directory_path, output_filename="combined_output.mp3", pa
 
 
 def main():
+
+    # we have to know which episode number this is. the way I'm proposing to do this is to keep the episode text from
+    # all previous episodes in the /data directory for now (maybe change later, but I think this is fine) and determine
+    # what the episode number is from this.
+    current_episode_number = find_highest_episode(os.path.join(os.getcwd(), 'data')) + 1
+
+    user_input = input('Producing Episode #' + str(current_episode_number) + '. Proceed (y/n)?')
+
+    if user_input != 'y':
+        sys.exit()
+
+    # load canned intro and outro mp3 files
+    intro_and_outro_directory = os.path.join(os.getcwd(), 'show_intro_and_outro')
+    intro_audio = AudioSegment.from_mp3(os.path.join(intro_and_outro_directory, 'green_static_intro.mp3'))
+    outro_audio = AudioSegment.from_mp3(os.path.join(intro_and_outro_directory, 'green_static_outro.mp3'))
+
+    # generate audio file for spoken commercial text; return all the generated text
+    product, features, commercial, jingle, song_genre = run_commercial_generation(episode_number=current_episode_number)
+
+    commercial_directory = os.path.join(os.getcwd(), 'commercials')
+    commercial_text_audio = AudioSegment.from_mp3(os.path.join(commercial_directory, 'commercial_text_read_episode_' + str(episode_number) + '.mp3'))
+
+    print('until we have a suno API... here is the jingle and the song genre:')
+    print('******************************************************************')
+    print(jingle)
+    print(song_genre)
+    print('******************************************************************')
+
+    # generate audio file for main adventure body text
     generate_audio_from_script()
 
     stitch_audio_files(os.path.join(os.getcwd(), "episode_1_audio"))

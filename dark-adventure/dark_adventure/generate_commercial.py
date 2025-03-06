@@ -29,11 +29,11 @@ def generate_jingle(product, api_key):
 
 
 def generate_song_genre(api_key):
-    prompt = "You are a professional musician and artist. Name a random genre of music. Be as specific as possible."
+    prompt = "You are a professional musician and artist. Name a random genre of music. Be as specific as possible. Only respond with the song genre."
     return get_claude_completion(prompt, api_key)
 
 
-def main():
+def run_commercial_generation(episode_number):
     load_dotenv()
     CLAUDE_API_KEY = os.getenv("CLAUDE_API_KEY")
     ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY")
@@ -48,9 +48,14 @@ def main():
     jingle = generate_jingle(product, api_key=CLAUDE_API_KEY)
     song_genre = generate_song_genre(api_key=CLAUDE_API_KEY)
 
-    text_to_speech_file(client_to_use, voice_id, commercial, output_file_name='commercial_2.mp3')
-    print(jingle)
-    print(song_genre)
+    file_name = 'commercial_text_read_episode_' + str(episode_number) + '.mp3'
+    text_to_speech_file(client_to_use, voice_id, commercial, directory=os.path.join(os.getcwd(), 'commercials'), file_name=file_name)
+
+    return product, features, commercial, jingle, song_genre
+
+
+def main():
+    run_commercial_generation(666)
 
 
 # "Tired of ordinary clothes? SkyWeave from Lumeon Labs isn’t just fabric—it’s future-wear. Stay the perfect temperature instantly, feel lighter than air, and even record your dreams for later. This isn’t fashion—it’s technology woven into reality. Ready to upgrade your existence? SkyWeave is waiting."

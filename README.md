@@ -6,6 +6,5 @@ Python 3.10
 
 conda --> python-dotenv, anthropic, pydub
 pip --> elevenlabs, transformers
-pip3 install -U xformers --index-url https://download.pytorch.org/whl/cu124 
 
-...erg
+I think we don't need transformers as we should use suno here
