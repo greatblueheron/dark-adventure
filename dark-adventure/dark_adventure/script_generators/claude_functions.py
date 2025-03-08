@@ -3,10 +3,9 @@ import sys
 import anthropic
 import json
 import random
-import re
+from elevenlabs.client import ElevenLabs
 from typing import Optional
 from dotenv import load_dotenv
-from pathlib import Path
 
 
 def get_claude_completion(
@@ -102,10 +101,10 @@ def generate_character_prompt(current_characters, game_to_use):
     return gen_character_prompt
 
 
-def get_characters(number_of_new_characters_to_add, game_to_use):
+def get_characters(number_of_new_characters_to_add, game_to_use, API_KEY):
 
     try:
-        with open(os.path.join(os.getcwd(), '..', 'data', "characters_" + game_to_use + ".json"), "r") as file_out:
+        with open(os.path.join(os.getcwd(), 'data', "characters_" + game_to_use + ".json"), "r") as file_out:
             characters_here = json.load(file_out)
     except FileNotFoundError:
         print('No characters file found, generating one...')
@@ -124,7 +123,7 @@ def get_characters(number_of_new_characters_to_add, game_to_use):
             except Exception as e:
                 print(f"An error occurred: {str(e)}")
 
-        with open(os.path.join(os.getcwd(), '..', 'data', "characters_" + game_to_use + ".json"), "w") as file_out:
+        with open(os.path.join(os.getcwd(), 'data', "characters_" + game_to_use + ".json"), "w") as file_out:
             json.dump(characters_here, file_out, indent=4)    # `indent=4` makes it more readable
 
     return characters_here
@@ -170,10 +169,12 @@ def generate_player_prompt(current_players):
     return gen_player_prompt
 
 
-def get_players(number_of_new_players_to_add, file_path):
+def get_players(number_of_new_players_to_add, API_KEY):
+
+    player_directory = os.path.join(os.getcwd(), 'data', "players.json")
 
     try:
-        with open(file_path, "r") as file_out:
+        with open(player_directory, "r") as file_out:
             players_here = json.load(file_out)
     except FileNotFoundError:
         print('No player file found, generating one...')
@@ -192,7 +193,7 @@ def get_players(number_of_new_players_to_add, file_path):
             except Exception as e:
                 print(f"An error occurred: {str(e)}")
 
-        with open(file_path, "w") as file_out:
+        with open(player_directory, "w") as file_out:
             json.dump(players_here, file_out, indent=4)    # `indent=4` makes it more readable
 
     return players_here
@@ -258,15 +259,15 @@ FINAL INSTRUCTION: Deliver the ENTIRE script in one continuous response. DO NOT 
     return prompt
 
 
-if __name__ == "__main__":
+def generate_episode_text(episode_number):
     load_dotenv()
     API_KEY = os.getenv("CLAUDE_API_KEY")
 
-    options = ["Delta_Green"]
+    options = ["Delta_Green", "Call_of_Cthulhu"]
     game_to_use = random.choice(options)
 
-    all_characters = get_characters(number_of_new_characters_to_add=0, game_to_use=game_to_use)
-    all_players = get_players(number_of_new_players_to_add=0, file_path=os.path.join(os.getcwd(), '..', 'data', "players.json"))
+    all_characters = get_characters(number_of_new_characters_to_add=0, game_to_use=game_to_use, API_KEY=API_KEY)
+    all_players = get_players(number_of_new_players_to_add=0, API_KEY=API_KEY)
 
     # Number of players in the game
     n_players = random.randint(2, 5)
@@ -286,21 +287,11 @@ if __name__ == "__main__":
 
     full_episode = get_claude_completion(prompt=episode_prompt, api_key=API_KEY, max_tokens=15000)
 
-    # Get all episode files in the directory
-    files = Path(os.path.join(os.getcwd(), '..', 'data')).glob("episode_*.json")
-
-    # Extract episode numbers and find the max
-    max_episode = max(
-        (int(match.group(1)) for file in files if (match := re.search(r"episode_(\d+)\.json", file.name))),
-        default=None  # Handle empty case
-    )
-
-    if max_episode is None:
-        episode_number = 0
-    else:
-        episode_number = max_episode + 1
-
-    with open(os.path.join(os.getcwd(), '..', 'data', "episode_" + str(episode_number) + ".json"), "w") as file:
+    with open(os.path.join(os.getcwd(), 'data', "episode_" + str(episode_number) + ".json"), "w") as file:
         json.dump(full_episode, file)
 
-    print()
+    player_first_names = [each["Full Name"].split(" ")[0].lower() for each in players]
+    keeper_and_players = {'keeper': keeper["Full Name"].split(" ")[0].lower(), 'players': player_first_names}
+
+    with open(os.path.join(os.getcwd(), 'data', "players_and_keeper_" + str(episode_number) + ".json"), "w") as file:
+        json.dump(keeper_and_players, file)
