@@ -70,9 +70,15 @@ def run_commercial_generation(episode_number):
 
 
 def main():
-    run_commercial_generation(666)
+    for episode_number in range(6, 10):
+        product, features, commercial, jingle, song_genre = run_commercial_generation(episode_number)
+        print('episode:', episode_number)
+        print('*********************')
+        print('jingle:', jingle)
+        print('genre:', song_genre)
+        print()
+        # suno output should be ./commercials/'episode_' + str(current_episode_number) + '_commercial_jingle.mp3'
 
 
-# "Tired of ordinary clothes? SkyWeave from Lumeon Labs isn’t just fabric—it’s future-wear. Stay the perfect temperature instantly, feel lighter than air, and even record your dreams for later. This isn’t fashion—it’s technology woven into reality. Ready to upgrade your existence? SkyWeave is waiting."
 if __name__ == "__main__":
     sys.exit(main())
