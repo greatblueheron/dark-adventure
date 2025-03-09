@@ -70,7 +70,7 @@ def run_commercial_generation(episode_number):
 
 
 def main():
-    for episode_number in range(6, 10):
+    for episode_number in range(10, 21):
         product, features, commercial, jingle, song_genre = run_commercial_generation(episode_number)
         print('episode:', episode_number)
         print('*********************')

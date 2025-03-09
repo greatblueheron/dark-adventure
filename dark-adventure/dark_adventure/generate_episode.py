@@ -4,6 +4,7 @@ import sys
 import json
 import glob
 import re
+import time
 from elevenlabs.client import ElevenLabs
 from dotenv import load_dotenv
 from pydub import AudioSegment
@@ -228,47 +229,60 @@ def main():
     ######################################################
     # steps 1 and 5: load canned intro and outro mp3 files
     ######################################################
+    print('loading intro and outro audio...')
     intro_and_outro_directory = os.path.join(os.getcwd(), 'show_intro_and_outro')
     intro_audio = AudioSegment.from_mp3(os.path.join(intro_and_outro_directory, 'green_static_intro.mp3'))
     outro_audio = AudioSegment.from_mp3(os.path.join(intro_and_outro_directory, 'green_static_outro.mp3'))
-
-    # generate audio file for spoken commercial text; return all the generated text
-    product, features, commercial, jingle, song_genre = run_commercial_generation(episode_number=current_episode_number)
-
-    commercial_directory = os.path.join(os.getcwd(), 'commercials')
+    print('Done!')
 
     ##############################
     # load step 2 commercial audio
     ##############################
+    # # generate audio file for spoken commercial text; return all the generated text
+    # product, features, commercial, jingle, song_genre = run_commercial_generation(episode_number=current_episode_number)
+    print('loading commercial text audio...')
+    commercial_directory = os.path.join(os.getcwd(), 'commercials')
     commercial_text_audio = AudioSegment.from_mp3(
         os.path.join(commercial_directory,
                      'commercial_text_read_episode_' + str(current_episode_number) + '.mp3'))
-
-    file_path = os.path.join(commercial_directory, 'jingle_and_genre' + str(current_episode_number) + '.json')
-    with open(file_path, "r") as file_out:
-        jingle_and_genre = json.load(file_out)
-
-    print('until we have a suno API... here is the jingle and the song genre:')
-    print('******************************************************************')
-    print(jingle_and_genre)
-    print('******************************************************************')
+    print('Done!')
 
     #########################################################################
     # generate step 3 audio -- right now you have to do this manually in suno
     #########################################################################
 
-    commercial_jingle_audio = AudioSegment.from_mp3(os.path.join(commercial_directory, 'episode_' + str(current_episode_number) + '_commercial_jingle.mp3'))
+    # file_path = os.path.join(commercial_directory, 'jingle_and_genre' + str(current_episode_number) + '.json')
+    # with open(file_path, "r") as file_out:
+    #     jingle_and_genre = json.load(file_out)
+    #
+    # print('until we have a suno API... here is the jingle and the song genre:')
+    # print('******************************************************************')
+    # print(jingle_and_genre)
+    # print('******************************************************************')
 
+    print('loading commercial jingle audio...')
+    commercial_jingle_audio = AudioSegment.from_mp3(os.path.join(commercial_directory, 'episode_' + str(current_episode_number) + '_commercial_jingle.mp3'))
+    print('Done!')
     # generate episode text and player/keeper name file
+
+    print('generating new episode text...')
+    start = time.time()
     generate_episode_text(current_episode_number)
+    print('Done... took', time.time() - start, 'seconds...')
 
     # generate audio files for main adventure body text
+    print('generating audio from script...')
+    start = time.time()
     generate_audio_from_script(current_episode_number)
+    print('Done... took', time.time() - start, 'seconds...')
 
     #############################################
     # step 4 audio: combine main body audio files
     #############################################
+
+    print('stitching audio files together for main body...')
     stitch_audio_files(current_episode_number)
+    print('Done...')
 
     main_body_audio = AudioSegment.from_mp3(
         os.path.join(os.path.join(os.getcwd(), "episode_" + str(current_episode_number) + "_audio"),
@@ -279,6 +293,7 @@ def main():
 
     # Once we have all the audio files we normalize their volumes and combine them
 
+    print('normalizing and combining audio files...')
     list_of_audio_files = [intro_audio, commercial_text_audio, commercial_jingle_audio, main_body_audio, outro_audio]
     normalized_segments = normalize_audio_files(list_of_audio_files)
 
@@ -287,7 +302,7 @@ def main():
         os.mkdir(file_path)
 
     combine_audio_files(normalized_segments, os.path.join(file_path, "episode_" + str(current_episode_number) + "_full.mp3"))
-
+    print('Done!!!')
 
 if __name__ == "__main__":
     sys.exit(main())
