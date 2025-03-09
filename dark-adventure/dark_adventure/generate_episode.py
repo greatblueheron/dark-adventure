@@ -10,7 +10,6 @@ from dotenv import load_dotenv
 from pydub import AudioSegment
 from voice_generators.elevenlabs_voices import text_to_speech_file
 from utils.utils import find_highest_episode
-from generate_commercial import run_commercial_generation
 from script_generators.claude_functions import generate_episode_text
 
 
@@ -89,9 +88,9 @@ def generate_audio_from_script(episode_number):
         if answer != 'y':
             sys.exit()
 
-    idx = 39
+    idx = 0
 
-    for each in explicitly_filtered_split_full_list[39:]:
+    for each in explicitly_filtered_split_full_list:
 
         if len(each) == 1:
             # in this case, it's the keeper speaking, and text_to_speak will be the zeroth list element
