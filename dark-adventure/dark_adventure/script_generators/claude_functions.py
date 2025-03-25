@@ -56,9 +56,13 @@ def get_claude_completion(
 def generate_character_prompt(current_characters, game_to_use):
 
     if "Call_of_Cthulhu" in game_to_use:
-        occ_string = "A traditional CoC profession (academic, doctor, journalist, detective, etc.)"
+        occ_string = "A traditional Call of Cthulhu profession (academic, doctor, journalist, detective, etc.)"
     elif "Delta_Green" in game_to_use:
         occ_string = "A modern profession suitable for Delta Green (FBI agent, CDC researcher, military specialist, tech industry worker, etc.)"
+    elif "Trail_of_Cthulhu" in game_to_use:
+        occ_string = "A traditional Trail of Cthulhu profession (academic, doctor, journalist, detective, etc.)"
+    elif "The_Laundry_RPG" in game_to_use:
+        occ_string = "A typical The Laundry RPG profession (academic, bureaucrat, doctor, journalist, detective, etc.)"
     else:
         occ_string = ""
 
@@ -103,6 +107,7 @@ def generate_character_prompt(current_characters, game_to_use):
 
 def get_characters(number_of_new_characters_to_add, game_to_use, API_KEY):
 
+    # todo because the path depends on where it's called prob should fix something
     try:
         with open(os.path.join(os.getcwd(), 'data', "characters_" + game_to_use + ".json"), "r") as file_out:
             characters_here = json.load(file_out)
@@ -123,7 +128,7 @@ def get_characters(number_of_new_characters_to_add, game_to_use, API_KEY):
             except Exception as e:
                 print(f"An error occurred: {str(e)}")
 
-        with open(os.path.join(os.getcwd(), 'data', "characters_" + game_to_use + ".json"), "w") as file_out:
+        with open(os.path.join(os.getcwd(), '..', 'data', "characters_" + game_to_use + ".json"), "w") as file_out:
             json.dump(characters_here, file_out, indent=4)    # `indent=4` makes it more readable
 
     return characters_here
@@ -201,6 +206,50 @@ def get_players(number_of_new_players_to_add, API_KEY):
 
 def generate_episode_prompt(players_to_use, characters_to_use, keeper_to_use, game_to_use):
 
+    countries = [
+        "Afghanistan", "Albania", "Algeria", "Andorra", "Angola",
+        "Antigua and Barbuda", "Argentina", "Armenia", "Australia", "Austria",
+        "Azerbaijan", "Bahamas", "Bahrain", "Bangladesh", "Barbados",
+        "Belarus", "Belgium", "Belize", "Benin", "Bhutan",
+        "Bolivia", "Bosnia and Herzegovina", "Botswana", "Brazil", "Brunei",
+        "Bulgaria", "Burkina Faso", "Burundi", "Cabo Verde", "Cambodia",
+        "Cameroon", "Canada", "Central African Republic", "Chad", "Chile",
+        "China", "Colombia", "Comoros", "Congo (Congo-Brazzaville)", "Costa Rica",
+        "Croatia", "Cuba", "Cyprus", "Czechia (Czech Republic)", "Democratic Republic of the Congo",
+        "Denmark", "Djibouti", "Dominica", "Dominican Republic", "Ecuador",
+        "Egypt", "El Salvador", "Equatorial Guinea", "Eritrea", "Estonia",
+        "Eswatini", "Ethiopia", "Fiji", "Finland", "France",
+        "Gabon", "Gambia", "Georgia", "Germany", "Ghana",
+        "Greece", "Grenada", "Guatemala", "Guinea", "Guinea-Bissau",
+        "Guyana", "Haiti", "Holy See", "Honduras", "Hungary",
+        "Iceland", "India", "Indonesia", "Iran", "Iraq",
+        "Ireland", "Israel", "Italy", "Jamaica", "Japan",
+        "Jordan", "Kazakhstan", "Kenya", "Kiribati", "Kosovo",
+        "Kuwait", "Kyrgyzstan", "Laos", "Latvia", "Lebanon",
+        "Lesotho", "Liberia", "Libya", "Liechtenstein", "Lithuania",
+        "Luxembourg", "Madagascar", "Malawi", "Malaysia", "Maldives",
+        "Mali", "Malta", "Marshall Islands", "Mauritania", "Mauritius",
+        "Mexico", "Micronesia", "Moldova", "Monaco", "Mongolia",
+        "Montenegro", "Morocco", "Mozambique", "Myanmar", "Namibia",
+        "Nauru", "Nepal", "Netherlands", "New Zealand", "Nicaragua",
+        "Niger", "Nigeria", "North Korea", "North Macedonia", "Norway",
+        "Oman", "Pakistan", "Palau", "Palestine", "Panama",
+        "Papua New Guinea", "Paraguay", "Peru", "Philippines", "Poland",
+        "Portugal", "Qatar", "Romania", "Russia", "Rwanda",
+        "Saint Kitts and Nevis", "Saint Lucia", "Saint Vincent and the Grenadines", "Samoa", "San Marino",
+        "Sao Tome and Principe", "Saudi Arabia", "Senegal", "Serbia", "Seychelles",
+        "Sierra Leone", "Singapore", "Slovakia", "Slovenia", "Solomon Islands",
+        "Somalia", "South Africa", "South Korea", "South Sudan", "Spain",
+        "Sri Lanka", "Sudan", "Suriname", "Sweden", "Switzerland",
+        "Syria", "Taiwan", "Tajikistan", "Tanzania", "Thailand",
+        "Timor-Leste", "Togo", "Tonga", "Trinidad and Tobago", "Tunisia",
+        "Turkey", "Turkmenistan", "Tuvalu", "Uganda", "Ukraine",
+        "United Arab Emirates", "United Kingdom", "United States of America", "Uruguay", "Uzbekistan",
+        "Vanuatu", "Venezuela", "Vietnam", "Yemen", "Zambia",
+        "Zimbabwe"
+    ]
+
+    country_to_use = random.choice(countries)
     player_string = ""
     idx = 1
     for each in players_to_use:
@@ -221,11 +270,13 @@ Use these characters and elements:
 HUMAN PLAYERS:""" + "\n" + player_string + """
                 
 SCRIPT REQUIREMENTS:
-- Generate a title, time period, and setting with 3 locations
-- Include a Lovecraftian threat and strange phenomena
+- Generate a title, time period, and set the story in """ + country_to_use + """ with 3 locations
+- Include a Lovecraftian threat, a novel made-up Lovecraftian entity, and/or strange phenomena
 - Structure: Introduction (3 min), Scene 1 (7 min), Scene 2 (7 min), Scene 3 (7 min), Conclusion (3 min)
 - Include 3-5 NPCs, 2-3 clues, 1-2 red herrings, and 3-4 skill checks
 - Select a tone (Investigative/Action/Psychological/Cosmic Horror)
+- [Generate a truly random seven-letter English word] -- ensure that this word is in the TITLE
+- Emphasize the horror, and make it scary
 - Include 3-5 """ + game_to_use + """ mechanics
 
 Fill in the complete template below to create a full 30-minute script. Do not deviate from this structure and do not stop until the entire script is complete:
@@ -263,7 +314,8 @@ def generate_episode_text(episode_number):
     load_dotenv()
     API_KEY = os.getenv("CLAUDE_API_KEY")
 
-    options = ["Delta_Green", "Call_of_Cthulhu"]
+    options = ["Delta_Green", "Call_of_Cthulhu", "Delta_Green", "Call_of_Cthulhu", "Trail_of_Cthulhu", "The_Laundry_RPG"]
+
     game_to_use = random.choice(options)
 
     all_characters = get_characters(number_of_new_characters_to_add=0, game_to_use=game_to_use, API_KEY=API_KEY)
@@ -285,7 +337,8 @@ def generate_episode_text(episode_number):
 
     episode_prompt = generate_episode_prompt(players, characters, keeper, game_to_use)
 
-    full_episode = get_claude_completion(prompt=episode_prompt, api_key=API_KEY, max_tokens=15000)
+    temperature = 1.0
+    full_episode = get_claude_completion(prompt=episode_prompt, api_key=API_KEY, max_tokens=15000, temperature=temperature)
 
     with open(os.path.join(os.getcwd(), 'data', "episode_" + str(episode_number) + ".json"), "w") as file:
         json.dump(full_episode, file)
@@ -295,3 +348,16 @@ def generate_episode_text(episode_number):
 
     with open(os.path.join(os.getcwd(), 'data', "players_and_keeper_" + str(episode_number) + ".json"), "w") as file:
         json.dump(keeper_and_players, file)
+
+
+def main():
+    load_dotenv()
+    CLAUDE_API_KEY = os.getenv("CLAUDE_API_KEY")
+    options = ["Delta_Green", "Call_of_Cthulhu", "Trail_of_Cthulhu", "The_Laundry_RPG"]
+    characters = get_characters(number_of_new_characters_to_add=8,
+                                game_to_use="The_Laundry_RPG",
+                                API_KEY=CLAUDE_API_KEY)
+
+
+if __name__ == "__main__":
+    sys.exit(main())
