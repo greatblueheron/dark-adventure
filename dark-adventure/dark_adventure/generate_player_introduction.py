@@ -4,7 +4,6 @@ import json
 from script_generators.claude_functions import get_claude_completion, get_players
 from voice_generators.elevenlabs_voices import text_to_speech_file
 from elevenlabs.client import ElevenLabs
-from elevenlabs import VoiceSettings, play, voices
 from dotenv import load_dotenv
 
 
@@ -61,7 +60,7 @@ def main():
             if voice.name.lower() == voice_dict[human_name]:
                 voice_id = voice.voice_id
         if not os.path.exists(os.path.join(os.getcwd(), "player_intro_audio", human_name + ".mp3")):
-            text_to_speech_file(client_to_use, voice_id, v, human_name + ".mp3")
+            text_to_speech_file(client_to_use, voice_id, v, os.path.join(os.getcwd(), 'player_intro_audio'), human_name + ".mp3")
     print()
 
 
