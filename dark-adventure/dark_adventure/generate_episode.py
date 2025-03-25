@@ -22,7 +22,7 @@ from script_generators.claude_functions import generate_episode_text
 #
 # 6. Auto-post to transistor.fm?
 
-def generate_audio_from_script(episode_number):
+def generate_audio_from_script(episode_number, start_from=0):
     # this assumes the episode text has already been generated and stored as ./data/episode_str(episode_number).json
     # this creates a new directory called "episode_" + str(episode_number) + "_audio" and then writes spoken audio
     # files of the form "output_" + str(idx) + ".mp3" for idx from 0 to the last spoken part (typically about 150?)
@@ -52,13 +52,8 @@ def generate_audio_from_script(episode_number):
 
     available_voices = client_to_use.voices.get_all()
 
-    player_names = []
-
     voice_id = {}
 
-    # keeper_and_players = {'keeper': keeper, 'players': players}
-
-    # todo how do we get the keeper name?
     for voice in available_voices.voices:
         if voice.name.lower() == voice_dict[players_and_keeper['keeper']]:
             voice_id[0] = voice.voice_id
@@ -66,69 +61,58 @@ def generate_audio_from_script(episode_number):
             if voice.name.lower() == voice_dict[each_player]:
                 voice_id[idx + 1] = voice.voice_id
 
-    # # this uses the text to extract player names
-    # for each in explicitly_filtered_split_full_list:
-    #     match = re.search(r"\((.*?)\)", each[0].lower())
-    #     if match:
-    #         player_name = match.group(1)
-    #         if player_name not in player_names:
-    #             player_names.append(player_name)
-    #             match = re.search(r"\d+", each[0].lower())
-    #             number = int(match.group())
-    #             for voice in available_voices.voices:
-    #                 if voice.name.lower() == voice_dict[player_name]:
-    #                     voice_id[number] = voice.voice_id
-
     # probably create new directory
     directory = "episode_" + str(episode_number) + "_audio"
     if not os.path.exists(directory):
         os.makedirs(directory)  # Creates the directory (and parents if needed)
     else:
-        answer = input('In generate_audio_from_script, episode_current_episode_audio exists; proceed (y/n?')
+        answer = input('In generate_audio_from_script, episode_current_episode_audio exists; proceed (y/n)?')
         if answer != 'y':
             sys.exit()
 
-    idx = 0
+    idx = start_from
 
-    for each in explicitly_filtered_split_full_list:
+    for idx_no, each in enumerate(explicitly_filtered_split_full_list):
 
-        if len(each) == 1:
-            # in this case, it's the keeper speaking, and text_to_speak will be the zeroth list element
-            speaker = voice_id[0]
-            text_to_speak = each[0]
-        else:
-            if len(each) == 2:
-                # this is what's supposed to happen!
-                speaker = None
-                if 'keeper' in each[0].lower():
-                    speaker = voice_id[0]
-                else:
-                    match = re.search(r"\d+", each[0].lower())
-                    try:
-                        number = int(match.group())
+        if idx_no>=idx:
+            if len(each) == 1:
+                # in this case, it's the keeper speaking, and text_to_speak will be the zeroth list element
+                speaker = voice_id[0]
+                text_to_speak = each[0]
+            else:
+                if len(each) == 2:
+                    # this is what's supposed to happen!
+                    speaker = None
+                    if 'keeper' in each[0].lower():
+                        speaker = voice_id[0]
+                    else:
+                        match = re.search(r"\d+", each[0].lower())
                         try:
-                            if str(number) in each[0].lower():
-                                speaker = voice_id[number]
-                        except TypeError:
-                            print('no speaker id found -- defaulting to keeper voice.')
-                    except AttributeError:
+                            number = int(match.group())
+                            try:
+                                if str(number) in each[0].lower():
+                                    speaker = voice_id[number]
+                            except Exception as e:
+                                # Catch any other exceptions
+                                print(f"An unexpected error occurred, defaulting to keeper: {e}")
+                        except AttributeError:
+                            speaker = voice_id[0]
+
+                    if speaker is None:
                         speaker = voice_id[0]
 
-                if speaker is None:
+                    text_to_speak = each[1]
+                else:
+                    print('something is weird... the length of this element is:', len(each))
                     speaker = voice_id[0]
+                    text_to_speak = ""
 
-                text_to_speak = each[1]
-            else:
-                print('something is weird... the length of this element is:', len(each))
-                speaker = voice_id[0]
-                text_to_speak = ""
-
-        text_to_speech_file(client_to_use,
-                            voice_id=speaker,
-                            text=text_to_speak,
-                            directory=directory,
-                            file_name="output_" + str(idx) + ".mp3")
-        idx += 1
+            text_to_speech_file(client_to_use,
+                                voice_id=speaker,
+                                text=text_to_speak,
+                                directory=directory,
+                                file_name="output_" + str(idx) + ".mp3")
+            idx += 1
 
 
 def stitch_audio_files(episode_number):
@@ -272,7 +256,7 @@ def main():
     # generate audio files for main adventure body text
     print('generating audio from script...')
     start = time.time()
-    generate_audio_from_script(current_episode_number)
+    generate_audio_from_script(current_episode_number, start_from=0)
     print('Done... took', time.time() - start, 'seconds...')
 
     #############################################
