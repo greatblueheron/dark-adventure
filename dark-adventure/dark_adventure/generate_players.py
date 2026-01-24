@@ -4,7 +4,7 @@ import sys
 import json
 from elevenlabs.client import ElevenLabs
 from dotenv import load_dotenv
-from claude_completion import get_claude_completion
+from utils.claude_completion import get_claude_completion
 
 
 def generate_player_prompt(current_players):

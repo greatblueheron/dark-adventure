@@ -7,7 +7,7 @@ import random
 from dotenv import load_dotenv
 from generate_players import get_players
 from generate_characters import get_characters
-from claude_completion import get_claude_completion
+from utils.claude_completion import get_claude_completion
 
 
 def generate_episode_prompt(players_to_use, characters_to_use, keeper_to_use, game_to_use):

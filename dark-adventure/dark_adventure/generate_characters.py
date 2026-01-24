@@ -3,7 +3,7 @@ import os
 import sys
 import json
 from dotenv import load_dotenv
-from claude_completion import get_claude_completion
+from utils.claude_completion import get_claude_completion
 
 
 def generate_character_prompt(current_characters, game_to_use):

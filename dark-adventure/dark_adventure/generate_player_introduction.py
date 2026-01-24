@@ -3,8 +3,8 @@
 import sys
 import os
 import json
-from claude_completion import get_claude_completion
-from elevenlabs_voices import text_to_speech_file
+from utils.claude_completion import get_claude_completion
+from utils.elevenlabs_voices import text_to_speech_file
 from elevenlabs.client import ElevenLabs
 from dotenv import load_dotenv
 

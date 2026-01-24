@@ -8,7 +8,7 @@ import time
 from elevenlabs.client import ElevenLabs
 from dotenv import load_dotenv
 from pydub import AudioSegment
-from elevenlabs_voices import text_to_speech_file
+from utils.elevenlabs_voices import text_to_speech_file
 from utils.utils import find_highest_episode
 from generate_episode_text_info import generate_episode_text
 
