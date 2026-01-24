@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 from pydub import AudioSegment
 from voice_generators.elevenlabs_voices import text_to_speech_file
 from utils.utils import find_highest_episode
-from script_generators.claude_functions import generate_episode_text
+from generate_episode_text_info import generate_episode_text
 
 
 # structure of episode:
