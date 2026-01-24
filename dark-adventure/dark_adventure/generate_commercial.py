@@ -2,7 +2,7 @@ import sys
 import os
 import random
 import json
-from script_generators.claude_functions import get_claude_completion
+from claude_completion import get_claude_completion
 from voice_generators.elevenlabs_voices import text_to_speech_file
 from dotenv import load_dotenv
 from elevenlabs.client import ElevenLabs
@@ -73,7 +73,7 @@ def main():
 
     # modify these to change range
     episode_number_min = 0
-    episode_number_max = 53
+    episode_number_max = 5
 
     for episode_number in range(episode_number_min, episode_number_max):
         product, features, commercial, jingle, song_genre = run_commercial_generation(episode_number)
