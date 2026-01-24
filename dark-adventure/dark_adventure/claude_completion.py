@@ -7,7 +7,7 @@ def get_claude_completion(
         prompt: str,
         api_key: str,
         max_tokens: Optional[int] = 30000,      # 15000
-        temperature: Optional[float] = 0.8,     # 0.7
+        temperature: Optional[float] = 1.0,     # 0.7
         # model: str = "claude-haiku-4-5-20251001"
         model: str = "claude-opus-4-5-20251101"
         # model: str = "claude-3-7-sonnet-20250219"
