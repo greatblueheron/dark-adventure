@@ -1,7 +1,9 @@
+""" generates audio files introducing each character. text generated and stored in
+/player_intro_audio/player_introductions.json. audio stored in /player_intro_audio/'human_name + ".mp3"' """
 import sys
 import os
 import json
-from script_generators.claude_functions import get_claude_completion, get_players
+from claude_completion import get_claude_completion
 from voice_generators.elevenlabs_voices import text_to_speech_file
 from elevenlabs.client import ElevenLabs
 from dotenv import load_dotenv
@@ -61,9 +63,7 @@ def main():
                 voice_id = voice.voice_id
         if not os.path.exists(os.path.join(os.getcwd(), "player_intro_audio", human_name + ".mp3")):
             text_to_speech_file(client_to_use, voice_id, v, os.path.join(os.getcwd(), 'player_intro_audio'), human_name + ".mp3")
-    print()
 
 
 if __name__ == "__main__":
     sys.exit(main())
-
