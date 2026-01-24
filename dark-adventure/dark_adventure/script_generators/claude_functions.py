@@ -11,9 +11,11 @@ from dotenv import load_dotenv
 def get_claude_completion(
         prompt: str,
         api_key: str,
-        max_tokens: Optional[int] = 15000,    #15000
-        temperature: Optional[float] = 0.7,
-        model: str = "claude-3-7-sonnet-20250219"
+        max_tokens: Optional[int] = 30000,      # 15000
+        temperature: Optional[float] = 0.8,     # 0.7
+        # model: str = "claude-haiku-4-5-20251001"
+        model: str = "claude-opus-4-5-20251101"
+        # model: str = "claude-3-7-sonnet-20250219"
         # model: str = "claude-3-5-haiku-20241022"
 ) -> str:
     """
@@ -24,7 +26,7 @@ def get_claude_completion(
         api_key (str): Your Anthropic API key
         max_tokens (int, optional): Maximum number of tokens in the response. Defaults to 1000
         temperature (float): higher = more creative, try range 0.2..1.0
-        model (str, optional): The Claude model to use. Defaults to claude-3-sonnet-20240229
+        model (str, optional): The Claude model to use.
 
     Returns:
         str: Claude's response text
@@ -107,7 +109,6 @@ def generate_character_prompt(current_characters, game_to_use):
 
 def get_characters(number_of_new_characters_to_add, game_to_use, API_KEY):
 
-    # todo because the path depends on where it's called prob should fix something
     try:
         with open(os.path.join(os.getcwd(), 'data', "characters_" + game_to_use + ".json"), "r") as file_out:
             characters_here = json.load(file_out)
@@ -246,7 +247,15 @@ def generate_episode_prompt(players_to_use, characters_to_use, keeper_to_use, ga
         "Turkey", "Turkmenistan", "Tuvalu", "Uganda", "Ukraine",
         "United Arab Emirates", "United Kingdom", "United States of America", "Uruguay", "Uzbekistan",
         "Vanuatu", "Venezuela", "Vietnam", "Yemen", "Zambia",
-        "Zimbabwe"
+        "Zimbabwe",
+        "The Kuiper Belt", "The Planet Mercury", "The Planet Venus", "The Planet Mars", "The Planet Uranus",
+        "The Planet Saturn", "The Planet Jupiter", "The Planet Pluto", "One of Jupiter's Moons", "One of Saturn's Moons",
+        "One of Uranus's Moons", "Deimos, a moon of Mars", "Phobos, a moon of Mars",
+        "The Event Horizon Spaceship",
+        "A Mining Colony in the 26-Draconis System",
+        "A Prison Ship Heading for the moon Europa",
+        "A science mission orbiting a strange black hole",
+        "a planet being pulled into the supermassive black hole at the center of the Milky Way"
     ]
 
     country_to_use = random.choice(countries)
@@ -270,14 +279,16 @@ Use these characters and elements:
 HUMAN PLAYERS:""" + "\n" + player_string + """
                 
 SCRIPT REQUIREMENTS:
-- Generate a title, time period, and set the story in """ + country_to_use + """ with 3 locations
+- Generate a title, time period, and set the story in """ + country_to_use + """ with 3 terrifying locations
 - Include a Lovecraftian threat, a novel made-up Lovecraftian entity, and/or strange phenomena
+- Ensure the story contains several interesting facts about """ + country_to_use + """ to create a sense of gritty reality
 - Structure: Introduction (3 min), Scene 1 (7 min), Scene 2 (7 min), Scene 3 (7 min), Conclusion (3 min)
 - Include 3-5 NPCs, 2-3 clues, 1-2 red herrings, and 3-4 skill checks
 - Select a tone (Investigative/Action/Psychological/Cosmic Horror)
-- [Generate a truly random seven-letter English word] -- ensure that this word is in the TITLE
-- Emphasize the horror, and make it scary
+- Emphasize the horror, and make it scary; make it likely that characters die or go insane
+- Include aspects of a random r/nosleep reddit story
 - Include 3-5 """ + game_to_use + """ mechanics
+- DO NOT use "whisper" or "whispers" in the title
 
 Fill in the complete template below to create a full 30-minute script. Do not deviate from this structure and do not stop until the entire script is complete:
 
