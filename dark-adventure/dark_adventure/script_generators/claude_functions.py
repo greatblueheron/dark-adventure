@@ -38,17 +38,18 @@ def get_claude_completion(
     client = anthropic.Client(api_key=api_key)
 
     try:
-        # Create a message with the prompt
-        message = client.messages.create(
+        # Create a streaming message with the prompt
+        with client.messages.stream(
             model=model,
             temperature=temperature,
             max_tokens=max_tokens,
             system="You are a script generator that delivers complete responses without interrupting to ask if the user wants you to continue. Always provide the entire requested content without breaking for confirmation.",
             messages=[{"role": "user", "content": prompt}]
-        )
+        ) as stream:
+            response = stream.get_final_message()
 
         # Return the response text
-        return message.content[0].text
+        return response.content[0].text
 
     except anthropic.APIError as e:
         print(f"Error calling Claude API: {str(e)}")
