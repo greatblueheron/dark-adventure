@@ -3,7 +3,7 @@ import os
 import random
 import json
 from claude_completion import get_claude_completion
-from voice_generators.elevenlabs_voices import text_to_speech_file
+from elevenlabs_voices import text_to_speech_file
 from dotenv import load_dotenv
 from elevenlabs.client import ElevenLabs
 
