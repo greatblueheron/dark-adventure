@@ -55,10 +55,10 @@ def generate_audio_from_script(episode_number, start_from=0):
     voice_id = {}
 
     for voice in available_voices.voices:
-        if voice.name.lower() == voice_dict[players_and_keeper['keeper']]:
+        if voice_dict[players_and_keeper['keeper']].lower() in voice.name.lower():
             voice_id[0] = voice.voice_id
         for idx, each_player in enumerate(players_and_keeper['players']):
-            if voice.name.lower() == voice_dict[each_player]:
+            if voice_dict[each_player].lower() in voice.name.lower():
                 voice_id[idx + 1] = voice.voice_id
 
     # probably create new directory
