@@ -2,7 +2,7 @@
 
 import sys
 import os
-from script_generators.claude_functions import get_claude_completion
+from claude_completion import get_claude_completion
 from dotenv import load_dotenv
 
 
