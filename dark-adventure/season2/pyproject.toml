@@ -1,3 +1,7 @@
+# Poetry 2.x style (PEP 621 [project] table).
+# If you're on Poetry 1.x, either upgrade (`pipx upgrade poetry`) or ask me
+# for the classic [tool.poetry] format — 1.x doesn't read [project].
+
 [project]
 name = "season2"
 version = "0.1.0"
