@@ -24,7 +24,8 @@ create type event_type       as enum (
 create type summary_scope    as enum ('scene', 'episode', 'module_arc', 'campaign');
 create type doc_kind         as enum (
   'protagonist_bible', 'character_bible', 'style_guide',
-  'module_chunk', 'house_rules', 'world_lore', 'commercial_brief'
+  'module_chunk', 'house_rules', 'world_lore', 'commercial_brief',
+  'episode_script'
 );
 
 -- ---------- core ----------
