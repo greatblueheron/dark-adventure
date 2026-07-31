@@ -1,5 +1,5 @@
-"""XP and leveling (B/X). Gold-for-XP is IN (1 gp recovered = 1 XP) —
-it's what makes B/X pacing work and gives litRPG-friendly loot numbers.
+"""XP and leveling (AD&D 1e). Gold-for-XP is IN (1 gp recovered = 1 XP) —
+it's what makes classic pacing work and gives litRPG-friendly loot numbers.
 
 award() mutates nothing: it returns per-character payloads the loop turns
 into events + character updates. process_levelup() takes a character dict
@@ -33,7 +33,8 @@ def level_for_xp(cls: str, xp: int) -> int:
     for i, needed in enumerate(thresholds, start=1):
         if xp >= needed:
             level = i
-    if level == T.MAX_LEVEL_ENCODED:
+    level = min(level, T.HARD_LEVEL_CAP.get(cls, level))
+    if level == T.MAX_LEVEL_ENCODED and cls not in T.HARD_LEVEL_CAP:
         # At the ceiling of encoded data. Loud warning so you extend tables
         # BEFORE the party actually needs level 7+.
         import warnings
@@ -53,24 +54,46 @@ def process_levelup(dice: Dice, character: dict) -> tuple[dict, list[dict]]:
 
     while c["level"] < target:
         c["level"] += 1
-        hp_gain = max(1, dice.roll(T.HIT_DICE[c["class"]], f"{c['name']} HP for level {c['level']}").total
-                      + T.ability_mod(c["stats"]["CON"]))
+        die, cap, flat = T.HIT_DICE[c["class"]]
+        if c["level"] <= cap:
+            hp_gain = max(1, dice.roll(die, f"{c['name']} HP for level {c['level']}").total
+                          + T.con_hp_adj(c["stats"]["CON"], c["class"]))
+        else:
+            hp_gain = flat          # past HD cap: flat hp, no CON adj (OSRIC)
         c["max_hp"] += hp_gain
         c["current_hp"] += hp_gain
         c["saves"] = T.saves(c["class"], c["level"])
 
         gained: list[str] = [f"+{hp_gain} HP"]
-        if c["class"] in T.SPELL_SLOTS:
-            slots = {str(i): {"max": n, "used": 0}
-                     for i, n in enumerate(T.SPELL_SLOTS[c["class"]].get(c["level"], []), start=1)}
+        if c["class"] in ("Cleric", "Druid", "Magic-User", "Illusionist"):
+            base = list(T.SPELL_SLOTS[c["class"]].get(c["level"], []))
+            if c["class"] in ("Cleric", "Druid"):
+                for i, n in enumerate(T.wis_bonus_spells(c["stats"]["WIS"])):
+                    if i < len(base):
+                        base[i] += n
+                    else:
+                        base.append(n)
+            slots = {str(i): {"max": n, "used": 0} for i, n in enumerate(base, start=1)}
             old_total = sum(v["max"] for v in c["spell_slots"].values())
-            new_total = sum(v["max"] for v in slots.values())
             c["spell_slots"] = slots
-            if new_total > old_total:
-                gained.append(f"spell slots now {[v['max'] for v in slots.values()]}")
+            if sum(v["max"] for v in slots.values()) > old_total:
+                gained.append(f"spell slots now {base}")
+            if c["class"] in ("Magic-User", "Illusionist"):
+                gained.append("learns one new spell of highest castable level")
+        elif c["class"] in ("Ranger", "Paladin") and c["level"] in T.SPELL_SLOTS[c["class"]]:
+            entry = T.SPELL_SLOTS[c["class"]][c["level"]]
+            if c["class"] == "Paladin":
+                c["spell_slots"] = {str(i): {"max": n, "used": 0}
+                                    for i, n in enumerate(entry, start=1)}
+            else:   # ranger: split druid/mu pools
+                c["spell_slots"] = {kind: {str(i): {"max": n, "used": 0}
+                                           for i, n in enumerate(lst, start=1)}
+                                    for kind, lst in entry.items()}
+            gained.append("gains limited spellcasting" if c["level"] in (8, 9) else "spell slots improved")
         if c["class"] == "Thief":
             c["abilities"] = [a for a in c["abilities"] if not a.startswith("Thief skills:")]
-            c["abilities"].append(f"Thief skills: {T.THIEF_SKILLS[c['level']]}")
+            c["abilities"].append(
+                f"Thief skills: {T.thief_skills(c['level'], c['stats']['DEX'], c.get('ancestry', 'Human'))}")
             gained.append("thief skills improved")
 
         events.append(dict(

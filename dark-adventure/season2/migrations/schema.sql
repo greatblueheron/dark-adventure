@@ -1,6 +1,7 @@
 -- ============================================================
 -- Whispers in Green Static — Season 2 ("Borderlands" campaign)
--- Persistent D&D campaign state engine — Supabase/Postgres schema
+-- Persistent AD&D 1e campaign state engine — Supabase/Postgres schema
+-- (v2: ruleset default -> OSRIC; party_sheet includes ancestry+alignment)
 -- Run in Supabase SQL editor. Assumes service-role access from
 -- your pipeline (single-operator backend; RLS left disabled).
 -- ============================================================
@@ -31,7 +32,7 @@ create table campaigns (
   id                uuid primary key default gen_random_uuid(),
   name              text not null,
   status            campaign_status not null default 'active',
-  ruleset           text not null default 'B/X (OSE)',   -- which rules the engine implements
+  ruleset           text not null default 'AD&D 1e (OSRIC)',   -- which rules the engine implements
   current_module_id uuid,                                -- FK added after modules
   in_world_date     text,                                -- freeform campaign calendar
   created_at        timestamptz not null default now()
@@ -197,8 +198,8 @@ create index idx_documents_kind on documents(campaign_id, kind);
 
 -- ---------- convenience views ----------
 create view party_sheet as
-select c.name, c.is_protagonist, c.class, c.level, c.xp,
-       c.current_hp, c.max_hp, c.armor_class, c.status,
+select c.name, c.is_protagonist, c.class, c.ancestry, c.alignment,
+       c.level, c.xp, c.current_hp, c.max_hp, c.armor_class, c.status,
        c.conditions,
        coalesce(json_agg(json_build_object('item', i.name, 'qty', i.quantity))
                 filter (where i.id is not null and i.status = 'held'), '[]') as inventory

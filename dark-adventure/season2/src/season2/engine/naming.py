@@ -28,6 +28,44 @@ def _default_call(prompt: str) -> str:
     return "".join(b.text for b in msg.content if b.type == "text")
 
 
+# Common real first names (mixed) and surnames for the protagonist —
+# chosen in CODE with a true random draw, never by the model (LLMs converge
+# on favourites like "Marcus Webb").
+# The protagonist is male (production decision); the name is drawn from
+# the male list. FEMALE_FIRST_NAMES is retained for any future use.
+MALE_FIRST_NAMES = [
+    "James", "David", "Michael", "Daniel", "Matthew", "Chris", "Andrew", "Ryan",
+    "Kevin", "Brian", "Jason", "Eric", "Tyler", "Brandon", "Aaron", "Nathan",
+    "Adam", "Zach", "Sean", "Kyle", "Derek", "Trevor", "Colin", "Grant",
+    "Wesley", "Marcus", "Omar", "Victor", "Raj", "Dmitri", "Kenji", "Steve",
+    "Paul", "Mark", "Greg", "Scott", "Todd", "Jeff", "Craig", "Doug",
+    "Alan", "Neil", "Ian", "Owen", "Cole", "Wade", "Ross", "Lars",
+]
+FEMALE_FIRST_NAMES = [
+    "Sarah", "Emily", "Jessica", "Ashley", "Amanda", "Megan", "Lauren", "Rachel",
+    "Nicole", "Katie", "Hannah", "Alyssa", "Kayla", "Brooke", "Erin", "Molly",
+    "Paige", "Claire", "Jenna", "Holly", "Dana", "Tara", "Robin", "Priya",
+    "Elena", "Maya", "Nina", "Sofia", "Ingrid", "Leila",
+]
+FIRST_NAMES = MALE_FIRST_NAMES + FEMALE_FIRST_NAMES   # legacy alias
+LAST_NAMES = [
+    "Smith", "Johnson", "Brown", "Taylor", "Anderson", "Thomas", "Jackson",
+    "White", "Harris", "Martin", "Thompson", "Robinson", "Clark", "Lewis",
+    "Walker", "Hall", "Young", "King", "Wright", "Scott", "Green", "Baker",
+    "Adams", "Nelson", "Hill", "Campbell", "Mitchell", "Carter", "Phillips",
+    "Evans", "Turner", "Parker", "Collins", "Edwards", "Stewart", "Morris",
+    "Murphy", "Cook", "Rogers", "Reed", "Bailey", "Bell", "Cooper", "Ward",
+    "Nguyen", "Patel", "Kim", "Garcia", "Martinez", "Chen", "Kowalski",
+    "O'Brien", "MacLeod", "Fischer", "Novak", "Lindqvist", "Tanaka", "Haddad",
+]
+
+
+def random_protagonist_name(gender: str = "male") -> str:
+    import random as _random
+    pool = MALE_FIRST_NAMES if gender == "male" else FEMALE_FIRST_NAMES
+    return f"{_random.choice(pool)} {_random.choice(LAST_NAMES)}"
+
+
 PROMPT = """You are naming the cast of a serialized AD&D 1st-edition audio drama.
 Below is the rolled party as JSON. Propose one name per character.
 
@@ -38,10 +76,13 @@ Rules:
   syllable or rhyme).
 - Look at the stats for flavour: a CHA 7 cleric might have a dour name; a
   DEX 17 gnome something quick and clever.
-- The character marked "is_protagonist": true is a modern person from the
-  real 21st-century world transported into the game world. Give them an
-  ordinary, believable modern first+last name (e.g. the kind of name a
-  podcast producer or IT worker might have), NOT a fantasy name.
+- The character marked "is_protagonist": true will be named separately by
+  the production; return the exact placeholder string "PROTAGONIST" in
+  their position.
+- AVOID the stock fantasy names you would reach for first — be inventive,
+  draw on varied real-world linguistic inspirations (Norse, Welsh, Slavic,
+  Basque, Finnish, etc., filtered through a fantasy lens). Variety seed:
+  {nonce} — let it push you toward different choices than previous runs.
 - Reply with ONLY a JSON array of strings, in the same order as the input,
   no other text, no markdown fences.
 
@@ -60,17 +101,19 @@ def name_party(party: list[dict], call_fn=None, protagonist_name: str | None = N
              stats=e["character"]["stats"])
         for i, e in enumerate(party)
     ]
-    raw = call_fn(PROMPT.format(roster=json.dumps(roster, indent=1)))
+    import random as _random
+    raw = call_fn(PROMPT.format(roster=json.dumps(roster, indent=1),
+                                nonce=_random.randint(100000, 999999)))
     cleaned = re.sub(r"```(?:json)?|```", "", raw).strip()
     names = json.loads(cleaned)
     if not (isinstance(names, list) and len(names) == len(party)
             and all(isinstance(n, str) and n.strip() for n in names)):
         raise ValueError(f"Bad naming response: {raw[:200]}")
     names = [n.strip() for n in names]
-    if protagonist_name:
-        for i, e in enumerate(party):
-            if e["character"]["is_protagonist"]:
-                names[i] = protagonist_name
+    chosen = protagonist_name or random_protagonist_name()
+    for i, e in enumerate(party):
+        if e["character"]["is_protagonist"]:
+            names[i] = chosen
     return names
 
 

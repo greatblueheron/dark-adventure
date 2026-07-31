@@ -13,23 +13,27 @@ def test_award_splits_among_living_with_prime_req():
     assert len(out) == 2
     a = next(o for o in out if o["character_name"] == "A")
     c = next(o for o in out if o["character_name"] == "C")
-    assert a["xp_gained"] == 550  # +10% prime req
+    assert a["xp_gained"] == 550  # STR 16 -> +10% (1e prime req rule)
     assert c["xp_gained"] == 500
 
 
 def test_level_thresholds():
     assert level_for_xp("Thief", 0) == 1
-    assert level_for_xp("Thief", 1200) == 2
-    assert level_for_xp("Fighter", 1999) == 1
-    assert level_for_xp("Fighter", 2000) == 2
+    assert level_for_xp("Thief", 1250) == 2
+    assert level_for_xp("Fighter", 1899) == 1
+    assert level_for_xp("Fighter", 1900) == 2
+    assert level_for_xp("Druid", 99999999) == 14  # hard cap
 
 
 def test_levelup_rolls_hp_and_updates():
-    e = make_character(Dice(seed=42), "T", preferred_class="Thief")
-    c = e["character"]
+    # find a seed whose natural rolls produce a Thief
+    for seed in range(300):
+        c = make_character(Dice(seed=seed), "T", race="Human")["character"]
+        if c["class"] == "Thief":
+            break
     assert c["class"] == "Thief"
-    c["xp"] = 2500  # thief level 3
-    updated, events = process_levelup(Dice(seed=42), c)
+    c["xp"] = 2600  # OSRIC thief: level 3 at 2,500
+    updated, events = process_levelup(Dice(seed=1), c)
     assert updated["level"] == 3
     assert updated["max_hp"] > c["max_hp"]
     assert len(events) == 2  # 1->2 and 2->3

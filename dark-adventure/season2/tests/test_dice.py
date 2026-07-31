@@ -22,3 +22,16 @@ def test_log_and_drain():
     log = d.drain_log()
     assert len(log) == 2 and d.log == []
     assert "attack" in str(log[0])
+
+
+def test_5d6_drop_two_bounds_and_math():
+    from season2.rules.chargen import roll_5d6_drop_two
+    from season2.rules.dice import Dice
+    d = Dice(seed=9)
+    for _ in range(200):
+        v = roll_5d6_drop_two(d, "stat")
+    # verify against the logged rolls of the last call
+    last = d.log[-1]
+    assert last.notation == "5d6" and len(last.rolls) == 5
+    assert v == sum(last.rolls) - sum(sorted(last.rolls)[:2])
+    assert 3 <= v <= 18

@@ -23,9 +23,12 @@ Drop this directory into `dark_adventure/season2/`. Each phase has a clear
 ## Phase 1 — Rules engine + seed party (a weekend or two)
 Pure Python. No LLM calls. This is the layer everything trusts.
 - [ ] `rules/dice.py` — done (implemented + tested in this scaffold).
-- [ ]`rules/tables.py` — transcribe B/X (via OSE SRD, which is free and
-      clearly licensed) tables: attack matrices/THAC0, saves, XP thresholds,
-      class HD, morale, reaction.
+- [ ] `rules/tables.py` — VERIFIED against the OSRIC SRD (July 2026) and
+      encoded to **level 14**, covering the classic chain through Queen of
+      the Demonweb Pits. Caveats: to-hit is simplified to THAC0 (matrices'
+      repeating-20s approximated by natural-20 auto-hit), and demihuman
+      level limits are deliberately NOT enforced (they'd cap demihumans
+      below the endgame — flip consciously if you want full authenticity).
 - [ ] `rules/chargen.py` — roll a level-1 character (3d6 in order or your
       house rule), pick class legally, roll HP, starting gear, gold.
 - [ ] `rules/combat.py` — initiative, attack resolution, damage, morale
