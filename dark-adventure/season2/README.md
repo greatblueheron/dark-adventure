@@ -67,7 +67,7 @@ Pure Python rules (LLM used only for cosmetic naming, human-approved).
 **Gate passed:** party seeded and readable via `party_sheet` /
 `db roster`; 26 deterministic tests green.
 
-## Phase 2 — Content prep (a weekend, plus a decision)
+## Phase 2 — Content prep ✅ DONE (B2 loaded: 120 chunks, voyage-3.5 @1024d, ivfflat, gate passed)
 - [ ] **Decide the IP posture** before digitizing anything: verbatim
       module adaptation vs. renamed/remixed "in the style of." (Remix
       strongly recommended for a public feed; mechanics via OSRIC are
@@ -82,7 +82,7 @@ Pure Python rules (LLM used only for cosmetic naming, human-approved).
 **Done when:** "party is at the Caves of Chaos entrance" retrieves the
 right chunks and nothing irrelevant.
 
-## Phase 3 — Narrative bootstrap (fun part; human-in-the-loop) ← NEXT
+## Phase 3 — Narrative bootstrap ✅ DONE (all artifacts generated, Episode 1 approved)
 - [ ] **Protagonist bible** (`documents`, kind='protagonist_bible'):
       Aaron Fischer's modern-world backstory, voice, speech quirks, D&D
       familiarity, arrival mystery — including the **Neutral Evil
@@ -99,7 +99,7 @@ right chunks and nothing irrelevant.
 
 **Done when:** you read Episode 1 aloud and love it.
 
-## Phase 4 — The scene loop (the core build, 2-4 weekends)
+## Phase 4 — The scene loop (BUILT — milestone pending) ← CURRENT
 - [ ] `engine/context.py` — planning/scene context builders per
       `docs-generation-loop.md` token budget. Must implement the
       **two-layer knowledge model**: ground truth (DB) vs. what the
